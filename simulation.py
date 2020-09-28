@@ -82,7 +82,7 @@ def simulateManyServers(number_servers,input_file):
 	average_wait = sum(queue_time)/len(queue_time)
 	print("Average Wait %6.2f secs."%(average_wait))
 	#Realized very late that I am unsure if I am supposed to include queue information in this function too.
-
+	#Did I implement round robin functionality correctly? The server_farm[counter%len(server_farm)] might have worked.
 def main():
 	#Main function that takes relevant arguments
 	import argparse
@@ -96,4 +96,4 @@ def main():
 		simulateManyServers(args.servers,args.file)
 if __name__=="__main__":
 	main()	
-		
+#To answer the question in Part III, the higher the number of servers, the lower the average latency		
