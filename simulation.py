@@ -1,3 +1,4 @@
+#Begin by establishing the relevant classes below:
 class queue:
 	def __init__(self):
 		self.items = []
@@ -37,6 +38,7 @@ class request:
 	def wait_time(self, current_time):
 		return current_time - self.timestamp
 def simulateOneServer(input_file):
+	#Function to simulate one single server. Includes remaining queue in output.
 	from csv import reader
 	server_one=server()
 	s_queue=queue()
@@ -54,13 +56,44 @@ def simulateOneServer(input_file):
 	csv_file.close()
 	average_wait = sum(queue_time)/len(queue_time)
 	print("Average Wait %6.2f secs %3d tasks remaining."%(average_wait, s_queue.size()))
+def simulateManyServers(number_servers,input_file):
+	#Function to simulate many servers... not sure I did this correctly.
+	from csv import reader
+	queue_time=[]
+	server_farm=[]
+	for n in range(0,int(number_servers)):
+		server_farm.append([])
+		server_farm[n].append(server())
+		server_farm[n].append(queue())
+	#Less readable as nested lists, but it does seem to work
+	with open(input_file) as csv_file:
+		csv_requests=reader(csv_file)
+		counter=-1
+		for line in csv_requests:
+			counter+=1 
+			job=request(int(line[0]),int(line[2]))
+			server_farm[counter%len(server_farm)][1].enqueue(job)
+			if (not server_farm[counter%len(server_farm)][0].busy()) and (not server_farm[counter%len(server_farm)][1].is_empty()):
+				next_task=server_farm[counter%len(server_farm)][1].dequeue()
+				queue_time.append(next_task.wait_time(int(line[0])))
+				server_farm[counter%len(server_farm)][0].start_next(next_task)
+			server_farm[counter%len(server_farm)][0].tick()
+	csv_file.close()
+	average_wait = sum(queue_time)/len(queue_time)
+	print("Average Wait %6.2f secs."%(average_wait))
+	#Realized very late that I am unsure if I am supposed to include queue information in this function too.
 
 def main():
+	#Main function that takes relevant arguments
 	import argparse
 	parser=argparse.ArgumentParser()
 	parser.add_argument('--file', type=str)
+	parser.add_argument('--servers', type=int)
 	args=parser.parse_args()
-	simulateOneServer(args.file)
+	if not args.servers or (args.servers==1):
+		simulateOneServer(args.file)
+	else:
+		simulateManyServers(args.servers,args.file)
 if __name__=="__main__":
 	main()	
 		
